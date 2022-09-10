@@ -54,7 +54,7 @@ router.post("/create_list",  createListValid,(req, res, next) => {
 
   db.query(
     `INSERT INTO roomer ( schoolname,fullname, phone, email, address, member, amount_month, occupation,billelec,numbillelec
-      ,name_using_w,num_using_w,using_pow,using_pow_amount,guss_amount,guss_size,guss_using,class,num) VALUES ( 
+      ,name_using_w,num_using_w,using_pow,using_pow_amount,guss_amount,guss_size,guss_using,class,num,using_powBenzin,using_pow_amountBenzin) VALUES ( 
         '${req.body.schoolname}',    
         '${req.body.fullname}',
             '${req.body.phone}',
@@ -73,7 +73,9 @@ router.post("/create_list",  createListValid,(req, res, next) => {
             '${req.body.guss_size}',
             '${req.body.guss_using}',
             '${req.body.class}',
-            '${req.body.num}'
+            '${req.body.num}',
+            '${req.body.using_powBenzin}',
+            '${req.body.using_pow_amountBenzin}'
             )`,
     (err, result) => {
 
