@@ -1,13 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const db = require("./database");
-const { signupValidation, loginValidation ,createListValid} = require("./validation");
+const {
+  signupValidation,
+  loginValidation,
+  createListValid,
+} = require("./validation");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const app = express();
 
+const moment = require('moment')
+
 const cookieSession = require("cookie-session");
+const { json } = require("body-parser");
 
 router.post("/register", signupValidation, (req, res, next) => {
   db.query(
@@ -50,8 +57,7 @@ router.post("/register", signupValidation, (req, res, next) => {
     }
   );
 });
-router.post("/create_list",  createListValid,(req, res, next) => {
-
+router.post("/create_list", createListValid, (req, res, next) => {
   db.query(
     `INSERT INTO roomer ( schoolname,fullname, phone, email, address, member, amount_month, occupation,billelec,numbillelec
       ,name_using_w,num_using_w,using_pow,using_pow_amount,guss_amount,guss_size,guss_using,class,num,using_powBenzin,using_pow_amountBenzin) VALUES ( 
@@ -78,42 +84,37 @@ router.post("/create_list",  createListValid,(req, res, next) => {
             '${req.body.using_pow_amountBenzin}'
             )`,
     (err, result) => {
-
       if (result) {
-
         return res.status(200).send({
-            msg: "seccess : true \n status API server 500 is ready!!",
+          msg: "seccess : true \n status API server 500 is ready!!",
         });
       } else {
         // username is available
         return res.status(500).send({
-            msg: err,
-          });
+          msg: err,
+        });
       }
-      
     }
-
   );
 });
 router.post("/create_room", (req, res, next) => {
+  db.query(
+    `INSERT INTO room ( userid, name, link) VALUES ( '${req.body.userid}', '${req.body.name}', '${req.body.link}')`,
 
-    db.query(
-      `INSERT INTO room ( userid, name, link) VALUES ( '${req.body.userid}', '${req.body.name}', '${req.body.link}')`,
-    
-      (err, result) => {
-        if (result) {
-          return res.status(200).send({
-              msg: "status ok",
-          });
-        } else {
-          // username is available
-          return res.status(500).send({
-              msg: err,
-            });
-        }
+    (err, result) => {
+      if (result) {
+        return res.status(200).send({
+          msg: "status ok",
+        });
+      } else {
+        // username is available
+        return res.status(500).send({
+          msg: err,
+        });
       }
-    );
-  });
+    }
+  );
+});
 
 app.use(
   cookieSession({
@@ -220,7 +221,299 @@ router.get("/getlisr_roomer", (req, res, next) => {
   // const decoded = jwt.verify(theToken, "the-super-strong-secrect");
   db.query(
     "SELECT * FROM roomer ",
- 
+
+    function (error, results, fields) {
+      if (error) throw error;
+      return res.send({
+        error: false,
+        data: results,
+        message: "Fetch Successfully.",
+      });
+    }
+  );
+});
+router.get("/get_test", (req, res, next) => {
+  // if (
+  //   !req.headers.authorization ||
+  //   !req.headers.authorization.startsWith("Bearer") ||
+  //   !req.headers.authorization.split(" ")[1]
+  // ) {
+  //   return res.status(422).json({
+  //     message: "Please provide the token",
+  //   });
+  // }
+  // const theToken = req.headers.authorization.split(" ")[1];
+  // const decoded = jwt.verify(theToken, "the-super-strong-secrect");
+  db.query(
+    "SELECT * FROM name ",
+
+    function (error, results, fields) {
+      if (error) throw error;
+      return res.send({
+        error: false,
+        data: results,
+        message: "Fetch Successfully.",
+      });
+    }
+  );
+});
+
+
+router.get("/resource", (req, res, next) => {
+  // if (
+  //   !req.headers.authorization ||
+  //   !req.headers.authorization.startsWith("Bearer") ||
+  //   !req.headers.authorization.split(" ")[1]
+  // ) {
+  //   return res.status(422).json({
+  //     message: "Please provide the token",
+  //   });
+  // }
+  // const theToken = req.headers.authorization.split(" ")[1];
+  // const decoded = jwt.verify(theToken, "the-super-strong-secrect");
+  moment().utcOffset("+07:00")
+  console.log(moment().format("YYYY:MM:DD hh:mm:ss"))
+
+  db.query(
+    "SELECT * FROM resource_map ",
+
+    function (error, results, fields) {
+      if (error) throw error;
+
+      for (let i = 0; i < results.length; i++) {
+        // console.log(JSON.parse(results[i]['raw']))
+        try {
+        results[i]['raw'] = JSON.parse( results[i]['raw']);
+          
+        } catch (error) {
+          
+        }
+        
+      }
+      return res.send({
+        error: false,
+        data: results,
+        message: "Fetch Successfully.",
+      });
+    }
+  );
+});
+router.get("/resource/data", (req, res, next) => {
+  req.query.id
+  // if (
+  //   !req.headers.authorization ||
+  //   !req.headers.authorization.startsWith("Bearer") ||
+  //   !req.headers.authorization.split(" ")[1]
+  // ) {
+  //   return res.status(422).json({
+  //     message: "Please provide the token",
+  //   });
+  // }
+  // const theToken = req.headers.authorization.split(" ")[1];
+  // const decoded = jwt.verify(theToken, "the-super-strong-secrect");
+  moment().utcOffset("+07:00")
+  console.log(moment().format("YYYY:MM:DD hh:mm:ss"))
+
+  db.query(
+    `SELECT * FROM resource_map  where id ='${req.query.id}'`,
+
+    function (error, results, fields) {
+      if (error) throw error;
+
+      for (let i = 0; i < results.length; i++) {
+        // console.log(JSON.parse(results[i]['raw']))
+        try {
+        results[i]['raw'] = JSON.parse( results[i]['raw']);
+          
+        } catch (error) {
+          
+        }
+        
+      }
+      return res.send({
+        error: false,
+        data: results,
+        message: "Fetch Successfully.",
+      });
+    }
+  );
+});
+///----------------------------------------------------------------------------------------////
+router.post("/resource", (req, res, next) => {
+  const  data = JSON.stringify(req.body.data)
+  
+  var success = true;
+  moment().utcOffset("+07:00")
+  let date = moment().format("YYYY:MM:DD hh:mm:ss")
+  // Array.from(req.body.data).forEach(data => {
+    // console.log(data)
+    db.query(
+      `INSERT INTO resource_map ( raw,created_date, modified_date) VALUES (
+        '${data}',    
+          '${date}',
+              '${date}')`,
+      (err, result) => {
+        if (result) {
+          // return res.status(200).send({
+          //   msg: "seccess : true \n status API server 500 is ready!!",
+          // });
+        } else {
+          // username is available
+          success = false;
+          // return res.status(500).send({
+          //   msg: err,
+          // });
+        }
+      }
+    );
+  // });
+  if (success) {
+    return res.status(200).send({
+        msg: "seccess : true \n status API server 500 is ready!!",
+      });
+  }
+});
+
+///----------------------------------------------------------------------------------------////
+router.put("/resource", (req, res, next) => {
+
+  // console.log(req.body)
+  // console.log(req.body.data.length)
+  const  data = JSON.stringify(req.body.data)
+  var success = true;
+  moment().utcOffset("+07:00")
+  let date = moment().format("YYYY:MM:DD hh:mm:ss")
+  // Array.from(req.body.data).forEach(data => {
+    // console.log(data)
+    db.query(
+      `update resource_map set  raw ='${data}',   modified_date ='${date}' where id = '${req.query.id}',`,
+      (err, result) => {
+        if (result) {
+          // return res.status(200).send({
+          //   msg: "seccess : true \n status API server 500 is ready!!",
+          // });
+        } else {
+          // username is available
+          success = false;
+          // return res.status(500).send({
+          //   msg: err,
+          // });
+        }
+      }
+    );
+  // });
+  if (success) {
+    return res.status(200).send({
+        msg: "seccess : true \n status API server 500 is ready!!",
+      });
+  }
+});
+
+///----------------------------------------------------------------------------------------////
+router.delete("/resource", (req, res, next) => {
+
+  // console.log(req.body)
+  // console.log(req.body.data.length)
+
+  var success = true;
+  // Array.from(req.body.data).forEach(data => {
+    // console.log(data)
+    db.query(
+      `delete FROM resource_map where id ='${req.query.id}')`,
+      (err, result) => {
+        if (result) {
+          // return res.status(200).send({
+          //   msg: "seccess : true \n status API server 500 is ready!!",
+          // });
+        } else {
+          // username is available
+          success = false;
+          // return res.status(500).send({
+          //   msg: err,
+          // });
+        }
+      }
+    );
+  // });
+  if (success) {
+    return res.status(200).send({
+        msg: "seccess : true \n status API server 500 is ready!!",
+      });
+  }
+});
+
+router.get("/list-resource-year", (req, res, next) => {
+  var year = req.query.year
+  // if (
+  //   !req.headers.authorization ||
+  //   !req.headers.authorization.startsWith("Bearer") ||
+  //   !req.headers.authorization.split(" ")[1]
+  // ) {
+  //   return res.status(422).json({
+  //     message: "Please provide the token",
+  //   });
+  // }
+  // const theToken = req.headers.authorization.split(" ")[1];
+  // const decoded = jwt.verify(theToken, "the-super-strong-secrect");
+  db.query(
+    `SELECT zone,sum(KgCO2_eq) as total_KgCO2_eq,sum(tonene_CO2)as total_tonene_CO2 FROM resource_data WHERE YEAR(created_at) = '${year}' GROUP BY zone;`,
+
+    function (error, results, fields) {
+      if (error) throw error;
+      return res.send({
+        error: false,
+        data: results,
+        message: "Fetch Successfully.",
+      });
+    }
+  );
+});
+
+router.get("/list-resource-zone", (req, res, next) => {
+  var zone = req.query.zone
+  // if (
+  //   !req.headers.authorization ||
+  //   !req.headers.authorization.startsWith("Bearer") ||
+  //   !req.headers.authorization.split(" ")[1]
+  // ) {
+  //   return res.status(422).json({
+  //     message: "Please provide the token",
+  //   });
+  // }
+  // const theToken = req.headers.authorization.split(" ")[1];
+  // const decoded = jwt.verify(theToken, "the-super-strong-secrect");
+  db.query(
+    `SELECT * FROM resource_data WHERE zone = '${zone}';`,
+
+    function (error, results, fields) {
+      if (error) throw error;
+      return res.send({
+        error: false,
+        data: results,
+        message: "Fetch Successfully.",
+      });
+    }
+  );
+});
+
+router.get("/list-resource-3year", (req, res, next) => {
+  // if (
+  //   !req.headers.authorization ||
+  //   !req.headers.authorization.startsWith("Bearer") ||
+  //   !req.headers.authorization.split(" ")[1]
+  // ) {
+  //   return res.status(422).json({
+  //     message: "Please provide the token",
+  //   });
+  // }
+  // const theToken = req.headers.authorization.split(" ")[1];
+  // const decoded = jwt.verify(theToken, "the-super-strong-secrect");
+  db.query(
+    `SELECT YEAR(created_at) as year, sum(KgCO2_eq) as total_KgCO2_eq, sum(tonene_CO2) as total_tonene_CO2
+    FROM resource_data
+    WHERE created_at BETWEEN DATE_SUB(NOW(), INTERVAL 3 YEAR) AND NOW()
+    GROUP BY YEAR(created_at);`,
+
     function (error, results, fields) {
       if (error) throw error;
       return res.send({
