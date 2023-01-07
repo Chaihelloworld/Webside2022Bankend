@@ -11,7 +11,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const app = express();
 
-const moment = require('moment')
+const moment = require("moment");
 
 const cookieSession = require("cookie-session");
 const { json } = require("body-parser");
@@ -258,7 +258,6 @@ router.get("/get_test", (req, res, next) => {
   );
 });
 
-
 router.get("/resource", (req, res, next) => {
   // if (
   //   !req.headers.authorization ||
@@ -271,11 +270,24 @@ router.get("/resource", (req, res, next) => {
   // }
   // const theToken = req.headers.authorization.split(" ")[1];
   // const decoded = jwt.verify(theToken, "the-super-strong-secrect");
-  moment().utcOffset("+07:00")
-  console.log(moment().format("YYYY:MM:DD hh:mm:ss"))
 
+  moment().utcOffset("+07:00");
+  console.log(moment().format("YYYY:MM:DD hh:mm:ss"));
+  console.log(moment().year());
+  var year;
+  var sql;
+  if (!req.query.year) {
+    // year = '202'
+    // year = moment().year();
+    sql = `SELECT * FROM resource_map`
+  } else {
+    year = req.query.year;
+    sql = `SELECT * FROM resource_map where YEAR(created_date) ='${year}'`
+  }
+  
+  // var extened = `where YEAR(created_date) ='${year}'`
   db.query(
-    "SELECT * FROM resource_map ",
+    sql,
 
     function (error, results, fields) {
       if (error) throw error;
@@ -283,12 +295,8 @@ router.get("/resource", (req, res, next) => {
       for (let i = 0; i < results.length; i++) {
         // console.log(JSON.parse(results[i]['raw']))
         try {
-        results[i]['raw'] = JSON.parse( results[i]['raw']);
-          
-        } catch (error) {
-          
-        }
-        
+          results[i]["raw"] = JSON.parse(results[i]["raw"]);
+        } catch (error) {}
       }
       return res.send({
         error: false,
@@ -298,8 +306,9 @@ router.get("/resource", (req, res, next) => {
     }
   );
 });
+
 router.get("/resource/data", (req, res, next) => {
-  req.query.id
+  req.query.id;
   // if (
   //   !req.headers.authorization ||
   //   !req.headers.authorization.startsWith("Bearer") ||
@@ -311,8 +320,8 @@ router.get("/resource/data", (req, res, next) => {
   // }
   // const theToken = req.headers.authorization.split(" ")[1];
   // const decoded = jwt.verify(theToken, "the-super-strong-secrect");
-  moment().utcOffset("+07:00")
-  console.log(moment().format("YYYY:MM:DD hh:mm:ss"))
+  moment().utcOffset("+07:00");
+  console.log(moment().format("YYYY:MM:DD hh:mm:ss"));
 
   db.query(
     `SELECT * FROM resource_map  where id ='${req.query.id}'`,
@@ -323,12 +332,8 @@ router.get("/resource/data", (req, res, next) => {
       for (let i = 0; i < results.length; i++) {
         // console.log(JSON.parse(results[i]['raw']))
         try {
-        results[i]['raw'] = JSON.parse( results[i]['raw']);
-          
-        } catch (error) {
-          
-        }
-        
+          results[i]["raw"] = JSON.parse(results[i]["raw"]);
+        } catch (error) {}
       }
       return res.send({
         error: false,
@@ -340,110 +345,113 @@ router.get("/resource/data", (req, res, next) => {
 });
 ///----------------------------------------------------------------------------------------////
 router.post("/resource", (req, res, next) => {
-  const  data = JSON.stringify(req.body.data)
-  
+  const data = JSON.stringify(req.body.data);
+
   var success = true;
-  moment().utcOffset("+07:00")
-  let date = moment().format("YYYY:MM:DD hh:mm:ss")
+  moment().utcOffset("+07:00");
+  let date = moment().format("YYYY:MM:DD hh:mm:ss");
   // Array.from(req.body.data).forEach(data => {
-    // console.log(data)
-    db.query(
-      `INSERT INTO resource_map ( raw,created_date, modified_date) VALUES (
+  // console.log(data)
+  db.query(
+    `INSERT INTO resource_map ( raw,created_date, modified_date) VALUES (
         '${data}',    
           '${date}',
               '${date}')`,
-      (err, result) => {
-        if (result) {
-          // return res.status(200).send({
-          //   msg: "seccess : true \n status API server 500 is ready!!",
-          // });
-        } else {
-          // username is available
-          success = false;
-          // return res.status(500).send({
-          //   msg: err,
-          // });
-        }
+    (err, result) => {
+      if (result) {
+        // return res.status(200).send({
+        //   msg: "seccess : true \n status API server 500 is ready!!",
+        // });
+      } else {
+        // username is available
+        success = false;
+        // return res.status(500).send({
+        //   msg: err,
+        // });
       }
-    );
+    }
+  );
   // });
   if (success) {
     return res.status(200).send({
-        msg: "seccess : true \n status API server 500 is ready!!",
-      });
+      msg: "seccess : true \n status API server 500 is ready!!",
+    });
   }
 });
 
 ///----------------------------------------------------------------------------------------////
 router.put("/resource", (req, res, next) => {
-
   // console.log(req.body)
   // console.log(req.body.data.length)
-  const  data = JSON.stringify(req.body.data)
+  const data = JSON.stringify(req.body.data);
+  console.log("asdasdad")
   var success = true;
-  moment().utcOffset("+07:00")
-  let date = moment().format("YYYY:MM:DD hh:mm:ss")
+  moment().utcOffset("+07:00");
+  let date = moment().format("YYYY:MM:DD hh:mm:ss");
   // Array.from(req.body.data).forEach(data => {
-    // console.log(data)
-    db.query(
-      `update resource_map set  raw ='${data}',   modified_date ='${date}' where id = '${req.query.id}',`,
-      (err, result) => {
-        if (result) {
-          // return res.status(200).send({
-          //   msg: "seccess : true \n status API server 500 is ready!!",
-          // });
-        } else {
-          // username is available
-          success = false;
-          // return res.status(500).send({
-          //   msg: err,
-          // });
-        }
+  // console.log(data)
+  // console.log(date)
+  // console.log(req.query.id)
+  // console.log(data)
+  db.query(
+    `update resource_map SET raw ='${data}',   modified_date ='${date}' where id = '${req.query.id}'`,
+    (err, result) => {
+      if (result) {
+        // return res.status(200).send({
+        //   msg: "seccess : true \n status API server 500 is ready!!",
+        // });
+      } else {
+        // username is available
+        success = false;
+        // return res.status(500).send({
+        //   msg: err,
+        // });
       }
-    );
+    }
+  );
   // });
   if (success) {
     return res.status(200).send({
-        msg: "seccess : true \n status API server 500 is ready!!",
-      });
+      msg: "seccess : true \n status API server 500 is ready!!",
+    });
   }
 });
 
 ///----------------------------------------------------------------------------------------////
 router.delete("/resource", (req, res, next) => {
-
   // console.log(req.body)
   // console.log(req.body.data.length)
-
+  console.log(req.query.id)
   var success = true;
   // Array.from(req.body.data).forEach(data => {
-    // console.log(data)
-    db.query(
-      `delete FROM resource_map where id ='${req.query.id}')`,
-      (err, result) => {
-        if (result) {
-          // return res.status(200).send({
-          //   msg: "seccess : true \n status API server 500 is ready!!",
-          // });
-        } else {
-          // username is available
-          success = false;
-          // return res.status(500).send({
-          //   msg: err,
-          // });
-        }
+  // console.log(data)
+  db.query(
+    `delete FROM resource_map where id ='${req.query.id}'`,
+    (err, result) => {
+      if (result) {
+        // return res.status(200).send({
+        //   msg: "seccess : true \n status API server 500 is ready!!",
+        // });
+      } else {
+        // username is available
+        success = false;
+        // return res.status(500).send({
+        //   msg: err,
+        // });
       }
-    );
+    }
+  );
   // });
   if (success) {
     return res.status(200).send({
-        msg: "seccess : true \n status API server 500 is ready!!",
-      });
+      msg: "seccess : true \n status API server 500 is ready!!",
+    });
   }
 });
 
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 router.get("/list-resource-year", (req, res, next) => {
-  var year = req.query.year
+  var year = req.query.year;
   // if (
   //   !req.headers.authorization ||
   //   !req.headers.authorization.startsWith("Bearer") ||
@@ -470,7 +478,7 @@ router.get("/list-resource-year", (req, res, next) => {
 });
 
 router.get("/list-resource-zone", (req, res, next) => {
-  var zone = req.query.zone
+  var zone = req.query.zone;
   // if (
   //   !req.headers.authorization ||
   //   !req.headers.authorization.startsWith("Bearer") ||
