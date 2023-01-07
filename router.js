@@ -36,8 +36,7 @@ router.post("/register", signupValidation, (req, res, next) => {
           } else {
             // has hashed pw => add to database
             db.query(
-              `INSERT INTO users (name, email, password) VALUES ('${
-                req.body.name
+              `INSERT INTO users (name, email, password) VALUES ('${req.body.name
               }', ${db.escape(req.body.email)}, ${db.escape(hash)})`,
               (err, result) => {
                 if (err) {
@@ -284,23 +283,113 @@ router.get("/resource", (req, res, next) => {
     year = req.query.year;
     sql = `SELECT * FROM resource_map where YEAR(created_date) ='${year}'`
   }
-  
+
   // var extened = `where YEAR(created_date) ='${year}'`
   db.query(
     sql,
 
     function (error, results, fields) {
       if (error) throw error;
-
+     
       for (let i = 0; i < results.length; i++) {
         // console.log(JSON.parse(results[i]['raw']))
         try {
-          results[i]["raw"] = JSON.parse(results[i]["raw"]);
-        } catch (error) {}
+          results[i]["raw"] = JSON.parse(results[i]["raw"]);      
+        } catch (error) {
+         }
       }
       return res.send({
         error: false,
         data: results,
+        message: "Fetch Successfully.",
+      });
+    }
+  );
+});
+
+router.get("/resource/report", (req, res, next) => {
+  // if (
+  //   !req.headers.authorization ||
+  //   !req.headers.authorization.startsWith("Bearer") ||
+  //   !req.headers.authorization.split(" ")[1]
+  // ) {
+  //   return res.status(422).json({
+  //     message: "Please provide the token",
+  //   });
+  // }
+  // const theToken = req.headers.authorization.split(" ")[1];
+  // const decoded = jwt.verify(theToken, "the-super-strong-secrect");
+
+  moment().utcOffset("+07:00");
+  console.log(moment().format("YYYY:MM:DD hh:mm:ss"));
+  console.log(moment().year());
+  var year;
+  var sql;
+  if (!req.query.year) {
+    // year = '202'
+    // year = moment().year();
+    sql = `SELECT * FROM resource_map`
+  } else {
+    year = req.query.year;
+    sql = `SELECT * FROM resource_map where YEAR(created_date) ='${year}'`
+  }
+
+  // var extened = `where YEAR(created_date) ='${year}'`
+  db.query(
+    sql,
+
+    function (error, results, fields) {
+      if (error) throw error;
+      let sumEnergy = [0, 0, 0],
+        sumCO2rq = [0, 0, 0],
+        tonneCO2 = [0, 0, 0]
+      let data =[]
+      for (let i = 0; i < results.length; i++) {
+        // console.log(JSON.parse(results[i]['raw']))
+        try {
+          results[i]["raw"] = JSON.parse(results[i]["raw"]);
+          for (const [key1, value1] of Object.entries(results[i]["raw"])) {
+            for (const [key2, value2] of Object.entries(results[i]["raw"][key1])) {
+              let index = null;
+              switch (key1) {
+                case 'zone_1':
+                  index = 0;
+                  break;
+                case 'zone_2':
+                  index = 1;
+                  break;
+                case 'zone_3':
+                  index = 2;
+                  break;
+                default:
+                  break;
+              }
+
+              if (index == null) continue;
+
+              if (value2.amount_of_energy) {
+
+                sumEnergy[index] += Number(value2.amount_of_energy)
+              }
+              if (value2.kgCO2_eq) {
+                sumCO2rq[index] += Number(value2.kgCO2_eq)
+              }
+              if (value2.tonene_CO2) {
+                tonneCO2[index] += Number(value2.tonene_CO2)
+              }
+            }
+          }
+          // console.log('results-->',results[i]["raw"])
+          data = {
+            "KgCO2": sumCO2rq,
+            "tonene": tonneCO2
+          }
+        } catch (error) {
+         }
+      }
+      return res.send({
+        error: false,
+        data: data,
         message: "Fetch Successfully.",
       });
     }
@@ -333,7 +422,7 @@ router.get("/resource/data", (req, res, next) => {
         // console.log(JSON.parse(results[i]['raw']))
         try {
           results[i]["raw"] = JSON.parse(results[i]["raw"]);
-        } catch (error) {}
+        } catch (error) { }
       }
       return res.send({
         error: false,
