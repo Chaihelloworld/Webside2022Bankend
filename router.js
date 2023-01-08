@@ -447,6 +447,16 @@ for (let i = 0; i < results.length; i++) {
       data[key1] = data[key1] || {};
       for (const [key2, value2] of Object.entries(results[i]["raw"][key1])) {
         data[key1][key2] = value2;
+        // console.log(value2)
+        if(value2.kgCO2_eq == ""){
+          value2.kgCO2_eq = 0
+        }
+        if(value2.tonene_CO2 == ""){
+          value2.tonene_CO2 = 0
+        }
+        if(value2.amount_of_energy == ""){
+          value2.amount_of_energy = 0
+        }
       }
     }
   } catch (error) {}
