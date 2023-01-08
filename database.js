@@ -11,6 +11,7 @@ var conn = mysql.createConnection({
   // user: 'root',      // Replace with your database username
   // password: '',      // Replace with your database password
   // database: 'test' // // Replace with your database Name
+  // database: 'resource_information' // // Replace with your database Name
 }); 
  
 conn.connect(function(err) {

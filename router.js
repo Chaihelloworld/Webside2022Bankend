@@ -396,6 +396,141 @@ router.get("/resource/report", (req, res, next) => {
   );
 });
 
+router.get("/resource/report/zone", (req, res, next) => {
+  // if (
+  //   !req.headers.authorization ||
+  //   !req.headers.authorization.startsWith("Bearer") ||
+  //   !req.headers.authorization.split(" ")[1]
+  // ) {
+  //   return res.status(422).json({
+  //     message: "Please provide the token",
+  //   });
+  // }
+  // const theToken = req.headers.authorization.split(" ")[1];
+  // const decoded = jwt.verify(theToken, "the-super-strong-secrect");
+
+  moment().utcOffset("+07:00");
+  console.log(moment().format("YYYY:MM:DD hh:mm:ss"));
+  console.log(moment().year());
+  var year;
+  var sql;
+  // var zone
+  // req.query.zone
+  // if(req.query.zone == "1"){
+   var zone = `zone_${req.query.zone}`
+  // }
+  if (!req.query.year) {
+    // year = '202'
+    // year = moment().year();
+    sql = `SELECT * FROM resource_map`
+  } else {
+    year = req.query.year;
+    sql = `SELECT * FROM resource_map where YEAR(created_date) ='${year}'`
+  }
+
+  // var extened = `where YEAR(created_date) ='${year}'`
+  db.query(
+    sql,
+
+    function (error, results, fields) {
+      if (error) throw error;
+      // let sumEnergy = [0, 0, 0],
+      //   sumCO2rq = [0, 0, 0],
+      //   tonneCO2 = [0, 0, 0]
+      let data = {};
+
+for (let i = 0; i < results.length; i++) {
+  try {
+    results[i]["raw"] = JSON.parse(results[i]["raw"]);
+    for (const [key1, value1] of Object.entries(results[i]["raw"])) {
+      if (key1 !== zone) continue;
+      data[key1] = data[key1] || {};
+      for (const [key2, value2] of Object.entries(results[i]["raw"][key1])) {
+        data[key1][key2] = value2;
+      }
+    }
+  } catch (error) {}
+}
+      return res.send({
+        error: false,
+        data: data,
+        message: "Fetch Successfully.",
+      });
+    }
+  );
+});
+
+router.get("/resource/report/summary", (req, res, next) => {
+  // if (
+  //   !req.headers.authorization ||
+  //   !req.headers.authorization.startsWith("Bearer") ||
+  //   !req.headers.authorization.split(" ")[1]
+  // ) {
+  //   return res.status(422).json({
+  //     message: "Please provide the token",
+  //   });
+  // }
+  // const theToken = req.headers.authorization.split(" ")[1];
+  // const decoded = jwt.verify(theToken, "the-super-strong-secrect");
+
+  moment().utcOffset("+07:00");
+  console.log(moment().format("YYYY:MM:DD hh:mm:ss"));
+  console.log(moment().year());
+  var year;
+  var sql;
+  if (!req.query.year) {
+    // year = '202'
+    // year = moment().year();
+    sql = `SELECT * FROM resource_map where created_date BETWEEN DATE_SUB(NOW(), INTERVAL 3 YEAR) AND NOW()`
+  } else {
+    year = req.query.year;
+    sql = `SELECT * FROM resource_map where created_date BETWEEN DATE_SUB(NOW(), INTERVAL ${year} YEAR) AND NOW()`
+  }
+
+  // var extened = `where YEAR(created_date) ='${year}'`
+  db.query(
+    sql,
+
+    function (error, results, fields) {
+      if (error) throw error;
+      const data = {};
+
+for (let i = 0; i < results.length; i++) {
+  let date = new Date(results[i]["created_date"]);
+  let year = date.getFullYear();
+  data[year] = data[year] || {};
+
+  try {
+    let rawData = JSON.parse(results[i]["raw"]);
+    for (const [key1, value1] of Object.entries(rawData)) {
+      data[year][key1] = data[year][key1] || {
+        KgCO2: 0,
+        tonene: 0
+      };
+
+      for (const [key2, value2] of Object.entries(rawData[key1])) {
+        if (value2.amount_of_energy) {
+          data[year][key1]["KgCO2"] += Number(value2.amount_of_energy);
+        }
+        if (value2.kgCO2_eq) {
+          data[year][key1]["tonene"] += Number(value2.kgCO2_eq);
+        }
+        if (value2.tonene_CO2) {
+          data[year][key1]["tonene"] += Number(value2.tonene_CO2);
+        }
+      }
+    }
+  } catch (error) {}
+}
+      return res.send({
+        error: false,
+        data: data,
+        message: "Fetch Successfully.",
+      });
+    }
+  );
+});
+
 router.get("/resource/data", (req, res, next) => {
   req.query.id;
   // if (
