@@ -461,6 +461,7 @@ if (results.length == 0) data=[];
     
       return res.send({
         error: false,
+        success:results.length == 0?false:true,
         data: data,
         message: "Fetch Successfully.",
       });
