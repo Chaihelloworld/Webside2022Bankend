@@ -300,6 +300,7 @@ router.get("/resource", (req, res, next) => {
       }
       return res.send({
         error: false,
+        success:results.length == 0?false:true,
         data: results,
         message: "Fetch Successfully.",
       });
@@ -389,6 +390,7 @@ router.get("/resource/report", (req, res, next) => {
       }
       return res.send({
         error: false,
+        success:results.length == 0?false:true,
         data: data,
         message: "Fetch Successfully.",
       });
@@ -580,6 +582,7 @@ for (let i = 0; i < results.length; i++) {
 }
       return res.send({
         error: false,
+        success:results.length == 0?false:true,
         data: data,
         message: "Fetch Successfully.",
       });
@@ -617,6 +620,7 @@ router.get("/resource/data", (req, res, next) => {
       }
       return res.send({
         error: false,
+        success:results.length == 0?false:true,
         data: results,
         message: "Fetch Successfully.",
       });
