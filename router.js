@@ -437,30 +437,28 @@ router.get("/resource/report/zone", (req, res, next) => {
       // let sumEnergy = [0, 0, 0],
       //   sumCO2rq = [0, 0, 0],
       //   tonneCO2 = [0, 0, 0]
-      let data = {};
+      let data = {}
+if (results.length == 0) data=[];
+      for (let i = 0; i < results.length; i++) {
+        try {
+          results[i]["raw"] = JSON.parse(results[i]["raw"]);
+          for (const [key1, value1] of Object.entries(results[i]["raw"])) {
+            if (key1 !== zone) continue;
+            data[key1] = data[key1] || {};
+            for (const [key2, value2] of Object.entries(results[i]["raw"][key1])) {
+              data[key1][key2] = value2;
+              if (value2.kgCO2_eq == "") value2.kgCO2_eq = 0;
+              if (value2.tonene_CO2 == "") value2.tonene_CO2 = 0;
+              if (value2.amount_of_energy == "") value2.amount_of_energy = 0;
 
-for (let i = 0; i < results.length; i++) {
-  try {
-    results[i]["raw"] = JSON.parse(results[i]["raw"]);
-    for (const [key1, value1] of Object.entries(results[i]["raw"])) {
-      if (key1 !== zone) continue;
-      data[key1] = data[key1] || {};
-      for (const [key2, value2] of Object.entries(results[i]["raw"][key1])) {
-        data[key1][key2] = value2;
-        // console.log(value2)
-        if(value2.kgCO2_eq == ""){
-          value2.kgCO2_eq = 0
-        }
-        if(value2.tonene_CO2 == ""){
-          value2.tonene_CO2 = 0
-        }
-        if(value2.amount_of_energy == ""){
-          value2.amount_of_energy = 0
-        }
+
+            }
+            
+          }
+          
+        } catch (error) {}
       }
-    }
-  } catch (error) {}
-}
+    
       return res.send({
         error: false,
         data: data,
@@ -503,34 +501,81 @@ router.get("/resource/report/summary", (req, res, next) => {
 
     function (error, results, fields) {
       if (error) throw error;
-      const data = {};
+//       const data = {};
+
+// for (let i = 0; i < results.length; i++) {
+//   let date = new Date(results[i]["created_date"]);
+//   let year = date.getFullYear();
+//   let sumKgCO2 = 0;
+//   let sumTonene_CO2 = 0;
+//   let sumAmount_of_energy = 0;
+//   data[year] = data[year] || {};
+
+//   try {
+//     let rawData = JSON.parse(results[i]["raw"]);
+//     for (const [key1, value1] of Object.entries(rawData)) {
+//       console.log(rawData)
+//       data[year][key1] = data[year][key1] || {
+//         KgCO2: 0,
+//         tonene: 0,
+//         amount_of_energy:0
+//       };
+
+//       for (const [key2, value2] of Object.entries(rawData[key1])) {
+//         console.log(value2)
+//         if (value2.amount_of_energy) {
+//           data[year][key1]["amount_of_energy"] += Number(value2.amount_of_energy);
+//         }
+//         if (value2.kgCO2_eq) {
+//           data[year][key1]["KgCO2"] += Number(value2.kgCO2_eq);
+//         }
+//         if (value2.tonene_CO2) {
+//           data[year][key1]["tonene"] += Number(value2.tonene_CO2);
+//         }
+//       }
+//     }
+//   } catch (error) {}
+const data = {};
+const sums = {};
 
 for (let i = 0; i < results.length; i++) {
   let date = new Date(results[i]["created_date"]);
   let year = date.getFullYear();
+  sums[year] = sums[year] || {
+    KgCO2: 0,
+    tonene: 0,
+    amount_of_energy: 0
+  };
   data[year] = data[year] || {};
 
   try {
     let rawData = JSON.parse(results[i]["raw"]);
     for (const [key1, value1] of Object.entries(rawData)) {
+      console.log(rawData)
       data[year][key1] = data[year][key1] || {
         KgCO2: 0,
-        tonene: 0
+        tonene: 0,
+        amount_of_energy:0
       };
 
       for (const [key2, value2] of Object.entries(rawData[key1])) {
+        console.log(value2)
         if (value2.amount_of_energy) {
-          data[year][key1]["KgCO2"] += Number(value2.amount_of_energy);
+          data[year][key1]["amount_of_energy"] += Number(value2.amount_of_energy);
+          sums[year]["amount_of_energy"] += Number(value2.amount_of_energy);
         }
         if (value2.kgCO2_eq) {
-          data[year][key1]["tonene"] += Number(value2.kgCO2_eq);
+          data[year][key1]["KgCO2"] += Number(value2.kgCO2_eq);
+          sums[year]["KgCO2"] += Number(value2.kgCO2_eq);
         }
         if (value2.tonene_CO2) {
           data[year][key1]["tonene"] += Number(value2.tonene_CO2);
+          sums[year]["tonene"] += Number(value2.tonene_CO2);
         }
       }
     }
   } catch (error) {}
+  data[year] = sums[year];
 }
       return res.send({
         error: false,
