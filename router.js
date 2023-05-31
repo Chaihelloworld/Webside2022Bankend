@@ -18,7 +18,7 @@ const { json } = require("body-parser");
 
 router.post("/register", signupValidation, (req, res, next) => {
   db.query(
-    `SELECT * FROM users WHERE LOWER(email) = LOWER(${db.escape(
+    `SELECT * FROM users WHERE LOWER( ) = LOWER(${db.escape(
       req.body.email
     )});`,
     (err, result) => {
